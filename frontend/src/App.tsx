@@ -12,12 +12,15 @@ import { WS_URL } from './ui/api'
 
 export default function App() {
   useEffect(() => {
-    // Basic websocket connection for live toasts (Phase 1)
     const ws = new WebSocket(WS_URL)
     ws.onopen = () => ws.send('ping')
     ws.onmessage = (ev) => {
-      // eslint-disable-next-line no-console
-      console.log('[ws]', ev.data)
+      try {
+        const parsed = JSON.parse(ev.data)
+        window.dispatchEvent(new CustomEvent('ops:ws', { detail: parsed }))
+      } catch {
+        window.dispatchEvent(new CustomEvent('ops:ws', { detail: ev.data }))
+      }
     }
     const t = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) ws.send('ping')

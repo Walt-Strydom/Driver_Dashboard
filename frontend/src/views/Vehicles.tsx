@@ -58,6 +58,23 @@ export default function Vehicles() {
     apiGet(`/vehicles/${selectedId}`).then(setDetail).catch(console.error)
   }, [selectedId])
 
+  useEffect(() => {
+    const onWs = (event: Event) => {
+      const custom = event as CustomEvent<any>
+      const msg = custom.detail
+      if (!msg || typeof msg !== 'object') return
+      const t = msg.type
+      if (t === 'vehicle.updated' || t === 'job.updated' || t === 'ops.refresh') {
+        apiGet<Page<Vehicle>>('/vehicles', { page, page_size: 80, q: globalQuery, status: status || undefined })
+          .then(setData)
+          .catch(console.error)
+        if (selectedId) apiGet(`/vehicles/${selectedId}`).then(setDetail).catch(console.error)
+      }
+    }
+    window.addEventListener('ops:ws', onWs)
+    return () => window.removeEventListener('ops:ws', onWs)
+  }, [page, status, globalQuery, selectedId])
+
   const left = (
     <Panel title="Vehicles" right={<span style={{color:'var(--muted)'}}>{data ? `${data.total} total` : '...'}</span>}>
       <ToolbarRow>

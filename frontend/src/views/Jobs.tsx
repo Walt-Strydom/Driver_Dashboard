@@ -83,6 +83,23 @@ export default function Jobs() {
     apiGet<any>(`/jobs/${selectedId}`).then(setDetail).catch(e => setError(String(e)))
   }, [selectedId])
 
+  useEffect(() => {
+    const onWs = (event: Event) => {
+      const custom = event as CustomEvent<any>
+      const msg = custom.detail
+      if (!msg || typeof msg !== 'object') return
+      const t = msg.type
+      if (t === 'job.created' || t === 'job.updated' || t === 'ops.refresh') {
+        load().catch(e => setError(String(e)))
+        if (selectedId) {
+          apiGet<any>(`/jobs/${selectedId}`).then(setDetail).catch(e => setError(String(e)))
+        }
+      }
+    }
+    window.addEventListener('ops:ws', onWs)
+    return () => window.removeEventListener('ops:ws', onWs)
+  }, [selectedId, page, pageSize, status, priority, stale, globalQuery])
+
   const right = (
     <Panel title="Job details" right={<span style={{color:'var(--muted)'}}>Split pane</span>}>
       {!detail ? <div style={{color:'var(--muted)'}}>Select a job</div> : (

@@ -83,12 +83,25 @@ def assign_job(
             if vehicle and vehicle.compliance_state != "ok":
                 raise PermissionError("Assignment blocked: vehicle compliance not ok")
 
+    driver = session.get(Driver, driver_id) if driver_id else None
+    vehicle = session.get(Vehicle, vehicle_id) if vehicle_id else None
+
     job.driver_id = driver_id
     job.vehicle_id = vehicle_id
     if job.status == "unassigned" and (driver_id or vehicle_id):
         job.status = "assigned"
     job.last_update_at = datetime.utcnow()
     session.add(job)
+
+    if driver:
+        driver.status = "on_job"
+        driver.last_update_at = datetime.utcnow()
+        session.add(driver)
+    if vehicle:
+        vehicle.status = "in_use"
+        vehicle.last_update_at = datetime.utcnow()
+        session.add(vehicle)
+
     session.commit()
     session.refresh(job)
 
