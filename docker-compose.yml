@@ -1,51 +1,32 @@
 services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: ops
-      POSTGRES_USER: ops
-      POSTGRES_PASSWORD: ops
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ops -d ops"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-
   backend:
     build:
       context: ./backend
     environment:
-      DATABASE_URL: postgresql+psycopg://ops:ops@db:5432/ops
+      DATABASE_URL: postgresql+psycopg://ops:${POSTGRES_PASSWORD:-ops}@coal-postres:5432/ops
       APP_ENV: docker
-      CORS_ORIGINS: http://localhost:3000
-      SEED_ON_START: "true"
-    depends_on:
-      db:
-        condition: service_healthy
+      CORS_ORIGINS: https://dashboard.brandflow.co.za
+      SEED_ON_START: "false"
     ports:
       - "8000:8000"
+    networks:
+      - default
+      - brandflow-network
 
   frontend:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:8000
-        VITE_WS_URL: ws://localhost:8000/ws
+        VITE_API_URL: https://dashboard.brandflow.co.za/api
+        VITE_WS_URL: wss://dashboard.brandflow.co.za/ws
     depends_on:
       - backend
     ports:
       - "3000:80"
+    networks:
+      - default
+      - brandflow-network
 
-  adminer:
-    image: adminer:4
-    depends_on:
-      - db
-    ports:
-      - "8080:8080"
-
-volumes:
-  db_data:
+networks:
+  brandflow-network:
+    external: true

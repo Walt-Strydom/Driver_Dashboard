@@ -26,8 +26,24 @@ docker compose up --build
 
 3. Open:
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:8000/docs
-- DB admin (Adminer): http://localhost:8080 (server: `db`, user: `ops`, pass: `ops`, db: `ops`)
+- Backend API: http://localhost:8000/docs (or via proxy `https://dashboard.brandflow.co.za/api/docs`)
+
+## Brandflow deployment (Docker Compose)
+
+This compose file is configured for Brandflow networking:
+
+- joins external Docker network `brandflow-network`
+- backend connects to PostgreSQL host `coal-postres` on that network
+- primary domain is `https://dashboard.brandflow.co.za`
+- frontend proxies API requests from `/api/*` to backend and websocket `/ws`
+
+Required before launch:
+
+```bash
+docker network create brandflow-network || true
+export POSTGRES_PASSWORD='<your-db-password>'
+docker compose up -d --build
+```
 
 ## Seed data
 On first boot, the backend runs migrations and seeds sample data automatically.
