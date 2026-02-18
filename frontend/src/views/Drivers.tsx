@@ -59,6 +59,23 @@ export default function Drivers() {
     apiGet(`/drivers/${selectedId}`).then(setDetail).catch(console.error)
   }, [selectedId])
 
+  useEffect(() => {
+    const onWs = (event: Event) => {
+      const custom = event as CustomEvent<any>
+      const msg = custom.detail
+      if (!msg || typeof msg !== 'object') return
+      const t = msg.type
+      if (t === 'driver.updated' || t === 'job.updated' || t === 'ops.refresh') {
+        apiGet<Page<Driver>>('/drivers', { page, page_size: 80, q: globalQuery, status: status || undefined })
+          .then(setData)
+          .catch(console.error)
+        if (selectedId) apiGet(`/drivers/${selectedId}`).then(setDetail).catch(console.error)
+      }
+    }
+    window.addEventListener('ops:ws', onWs)
+    return () => window.removeEventListener('ops:ws', onWs)
+  }, [page, status, globalQuery, selectedId])
+
   const left = (
     <Panel title="Drivers" right={<span style={{color:'var(--muted)'}}>{data ? `${data.total} total` : '...'}</span>}>
       <ToolbarRow>
@@ -84,7 +101,7 @@ export default function Drivers() {
           </thead>
           <tbody>
             {table.getRowModel().rows.map(r => (
-              <tr key={r.id} onClick={()=>setSelectedId(r.original.id)} style={{cursor:'pointer', background: r.original.id === selectedId ? 'rgba(96,165,250,0.12)' : 'transparent'}}>
+              <tr key={r.id} onClick={()=>setSelectedId(r.original.id)} style={{cursor:'pointer', background: r.original.id === selectedId ? 'rgba(var(--accent-rgb),0.12)' : 'transparent'}}>
                 {r.getVisibleCells().map(c => (
                   <td key={c.id} style={{padding:'10px 10px', borderBottom:'1px solid var(--border)', whiteSpace:'nowrap'}}>
                     {flexRender(c.column.columnDef.cell, c.getContext())}

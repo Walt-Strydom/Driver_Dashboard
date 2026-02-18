@@ -3,7 +3,7 @@ from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import health, jobs, drivers, vehicles, alerts, audit, saved_views
+from app.routers import health, jobs, drivers, vehicles, alerts, audit, saved_views, reports, webhooks
 from app.realtime import hub
 
 app = FastAPI(title="Ops Console API", version="0.1.0")
@@ -24,6 +24,8 @@ app.include_router(vehicles.router)
 app.include_router(alerts.router)
 app.include_router(audit.router)
 app.include_router(saved_views.router)
+app.include_router(reports.router)
+app.include_router(webhooks.router)
 
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
