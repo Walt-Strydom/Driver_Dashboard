@@ -1,11 +1,12 @@
 :root{
+  --ms-blue:#0078d4;
   --bg:#f3f9ff;
   --panel:#ffffff;
   --panel2:#e8f3ff;
   --text:#0f2a44;
   --muted:#4b6480;
   --border:#b7d4f3;
-  --accent:#0078d4;
+  --accent:var(--ms-blue);
   --accent-rgb:0,120,212;
   --danger:#b42318;
   --warn:#b54708;
