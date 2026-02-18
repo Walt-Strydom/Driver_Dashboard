@@ -8,6 +8,7 @@ import Vehicles from './views/Vehicles'
 import Alerts from './views/Alerts'
 import AuditLog from './views/AuditLog'
 import Placeholder from './views/Placeholder'
+import Reports from './views/Reports'
 import { WS_URL } from './ui/api'
 
 export default function App() {
@@ -38,7 +39,7 @@ export default function App() {
         <Route path="/alerts" element={<Alerts />} />
         <Route path="/audit" element={<AuditLog />} />
         <Route path="/dispatch" element={<Placeholder title="Dispatch" />} />
-        <Route path="/reports" element={<Placeholder title="Reports" />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/admin" element={<Placeholder title="Admin" />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
