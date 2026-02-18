@@ -172,7 +172,7 @@ export default function Jobs() {
                 onClick={()=>setSelectedId(r.original.id)}
                 style={{
                   cursor:'pointer',
-                  background: r.original.id === selectedId ? 'rgba(96,165,250,0.12)' : 'transparent',
+                  background: r.original.id === selectedId ? 'rgba(var(--accent-rgb),0.12)' : 'transparent',
                 }}
               >
                 {r.getVisibleCells().map(c => (

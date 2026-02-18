@@ -21,7 +21,7 @@ type JobsReport = {
 
 function tile(label: string, value: string | number, tone: 'ok'|'warn'|'danger'|'info'|'muted' = 'info') {
   return (
-    <div style={{padding:12, border:'1px solid var(--border)', borderRadius:'var(--radius)', background:'#0b1220', minWidth:220}}>
+    <div style={{padding:12, border:'1px solid var(--border)', borderRadius:'var(--radius)', background:'var(--panel2)', minWidth:220}}>
       <div style={{fontSize:12, color:'var(--muted)'}}>{label}</div>
       <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:6}}>
         <div style={{fontSize:22, fontWeight:800}}>{value}</div>
@@ -38,8 +38,8 @@ function Bars({ data }: { data: { label: string; value: number }[] }) {
       {data.map((d) => (
         <div key={d.label} style={{display:'grid', gridTemplateColumns:'120px 1fr 60px', gap:10, alignItems:'center'}}>
           <div style={{fontSize:12, color:'var(--muted)'}}>{d.label}</div>
-          <div style={{height:10, background:'#0b1220', border:'1px solid var(--border)', borderRadius:999, overflow:'hidden'}}>
-            <div style={{height:'100%', width:`${Math.max(2, (d.value / max) * 100)}%`, background:'rgba(96,165,250,0.7)'}} />
+          <div style={{height:10, background:'var(--panel2)', border:'1px solid var(--border)', borderRadius:999, overflow:'hidden'}}>
+            <div style={{height:'100%', width:`${Math.max(2, (d.value / max) * 100)}%`, background:'rgba(var(--accent-rgb),0.7)'}} />
           </div>
           <div style={{fontSize:12, color:'var(--text)', textAlign:'right'}}>{d.value}</div>
         </div>

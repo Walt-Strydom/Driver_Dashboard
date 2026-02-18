@@ -8,7 +8,7 @@ type Alert = { id: string; severity: string; alert_type: string; status: string;
 
 function tile(label: string, value: number, tone: 'ok'|'warn'|'danger'|'info'|'muted' = 'info') {
   return (
-    <div style={{padding:12, border:'1px solid var(--border)', borderRadius:'var(--radius)', background:'#0b1220', minWidth:180}}>
+    <div style={{padding:12, border:'1px solid var(--border)', borderRadius:'var(--radius)', background:'var(--panel2)', minWidth:180}}>
       <div style={{fontSize:12, color:'var(--muted)'}}>{label}</div>
       <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:6}}>
         <div style={{fontSize:22, fontWeight:800}}>{value}</div>
