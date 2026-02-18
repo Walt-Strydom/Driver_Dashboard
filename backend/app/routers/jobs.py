@@ -3,6 +3,7 @@ import uuid
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from datetime import datetime
 
 from app.db import get_session
 from app.models import Job, Driver, Vehicle
@@ -11,6 +12,57 @@ from app.services.jobs import list_jobs, assign_job
 from app.realtime import hub
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
+
+
+@router.post("")
+async def create_job(payload: dict, session: Session = Depends(get_session)):
+    job_code = payload.get("job_code")
+    customer = payload.get("customer")
+    if not job_code or not customer:
+        raise HTTPException(400, "job_code and customer are required")
+
+    exists = session.exec(select(Job).where(Job.job_code == str(job_code))).first()
+    if exists:
+        raise HTTPException(409, "Job code already exists")
+
+    job = Job(
+        job_code=str(job_code),
+        customer=str(customer),
+        priority=str(payload.get("priority") or "normal"),
+        status=str(payload.get("status") or "unassigned"),
+        pickup_site=payload.get("pickup_site"),
+        drop_site=payload.get("drop_site"),
+        exceptions=payload.get("exceptions"),
+    )
+    session.add(job)
+    session.commit()
+    session.refresh(job)
+
+    await hub.broadcast_json(
+        {
+            "type": "job.created",
+            "payload": {
+                "id": str(job.id),
+                "job_code": job.job_code,
+                "status": job.status,
+                "source": "crm",
+                "last_update_at": job.last_update_at.isoformat(),
+            },
+        }
+    )
+    await hub.broadcast_json(
+        {
+            "type": "ops.refresh",
+            "payload": {
+                "entity": "job",
+                "action": "created",
+                "id": str(job.id),
+                "source": "crm",
+                "last_update_at": job.last_update_at.isoformat(),
+            },
+        }
+    )
+    return {"job": job}
 
 @router.get("", response_model=Page)
 def get_jobs(
@@ -75,4 +127,53 @@ async def post_assign(
         raise HTTPException(404, str(e))
 
     await hub.broadcast_json({"type": "job.updated", "payload": {"id": str(job.id), "status": job.status, "last_update_at": job.last_update_at.isoformat()}})
+    await hub.broadcast_json({"type": "driver.updated", "payload": {"id": str(job.driver_id) if job.driver_id else None, "status": "on_job" if job.driver_id else "off_duty", "job_id": str(job.id), "last_update_at": job.last_update_at.isoformat()}})
+    await hub.broadcast_json({"type": "vehicle.updated", "payload": {"id": str(job.vehicle_id) if job.vehicle_id else None, "status": "in_use" if job.vehicle_id else "available", "job_id": str(job.id), "last_update_at": job.last_update_at.isoformat()}})
+    await hub.broadcast_json({"type": "ops.refresh", "payload": {"entity": "job", "action": "assigned", "id": str(job.id), "last_update_at": job.last_update_at.isoformat()}})
+    return {"job": job}
+
+
+@router.post("/{job_id}/status")
+async def update_job_status(
+    job_id: uuid.UUID,
+    payload: dict,
+    session: Session = Depends(get_session),
+):
+    status = payload.get("status")
+    if not status:
+        raise HTTPException(400, "status is required")
+
+    job = session.get(Job, job_id)
+    if not job:
+        raise HTTPException(404, "Job not found")
+
+    job.status = str(status)
+    job.last_update_at = datetime.utcnow()
+    session.add(job)
+    session.commit()
+    session.refresh(job)
+
+    await hub.broadcast_json(
+        {
+            "type": "job.updated",
+            "payload": {
+                "id": str(job.id),
+                "status": job.status,
+                "last_update_at": job.last_update_at.isoformat(),
+            },
+        }
+    )
+    await hub.broadcast_json(
+        {
+            "type": "ops.refresh",
+            "payload": {
+                "entity": "job",
+                "action": "status_changed",
+                "id": str(job.id),
+                "status": job.status,
+                "last_update_at": job.last_update_at.isoformat(),
+            },
+        }
+    )
+
     return {"job": job}
