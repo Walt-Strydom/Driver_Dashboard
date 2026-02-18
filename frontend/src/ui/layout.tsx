@@ -37,7 +37,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               style={({isActive})=>({
                 padding:'10px 10px',
                 borderRadius:10,
-                background: isActive ? 'rgba(96,165,250,0.16)' : 'transparent',
+                background: isActive ? 'rgba(var(--accent-rgb),0.16)' : 'transparent',
                 color: isActive ? 'var(--text)' : 'var(--muted)',
               })}
             >
@@ -62,7 +62,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   borderRadius:10,
                   border:'1px solid var(--border)',
                   outline:'none',
-                  background:'#0b1220',
+                  background:'var(--panel2)',
                   color:'var(--text)',
                 }}
               />
@@ -87,7 +87,7 @@ const btnStyle: React.CSSProperties = {
   padding:'9px 12px',
   borderRadius:10,
   border:'1px solid var(--border)',
-  background:'rgba(96,165,250,0.18)',
+  background:'rgba(var(--accent-rgb),0.18)',
   color:'var(--text)',
   cursor:'pointer',
 }
@@ -96,7 +96,7 @@ const iconBtnStyle: React.CSSProperties = {
   padding:'9px 10px',
   borderRadius:10,
   border:'1px solid var(--border)',
-  background:'#0b1220',
+  background:'var(--panel2)',
   color:'var(--text)',
   cursor:'pointer',
 }
